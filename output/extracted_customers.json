@@ -1,0 +1,102 @@
+[
+    {
+        "First Name": "Ramesh",
+        "Last Name": "Kumar",
+        "Middle Name": null,
+        "Email": "ramesh.kumar85@gmail.com",
+        "Phone Number": "+91-9876543210",
+        "Date of Birth": "17-04-1985",
+        "Address": "123, MG Road, Bengaluru, Karnataka, India",
+        "Marital Status": "Married"
+    },
+    {
+        "First Name": "Priya",
+        "Last Name": "Sharma",
+        "Middle Name": null,
+        "Email": "priya.sharma1990@outlook.com",
+        "Phone Number": "+91-9123456780",
+        "Date of Birth": "02-12-1990",
+        "Address": "45, Lajpat Nagar, New Delhi, Delhi, India",
+        "Marital Status": "Single"
+    },
+    {
+        "First Name": "Arvind",
+        "Last Name": "Patel",
+        "Middle Name": null,
+        "Email": "arvind.patel78@yahoo.com",
+        "Phone Number": "+91-9812345678",
+        "Date of Birth": "05-09-1978",
+        "Address": "B-22, Sector 15, Noida, Uttar Pradesh, India",
+        "Marital Status": "Married"
+    },
+    {
+        "First Name": "Sneha",
+        "Last Name": "Joshi",
+        "Middle Name": null,
+        "Email": "sneha.joshi92@gmail.com",
+        "Phone Number": "+91-9898123456",
+        "Date of Birth": "28-06-1992",
+        "Address": "Flat 9A, Powai Heights, Mumbai, Maharashtra, India",
+        "Marital Status": "Single"
+    },
+    {
+        "First Name": "Ajay",
+        "Last Name": "Verma",
+        "Middle Name": null,
+        "Email": "ajayverma80@gmail.com",
+        "Phone Number": "+91-9977886655",
+        "Date of Birth": "11-03-1980",
+        "Address": "67, Ashok Vihar, Ludhiana, Punjab, India",
+        "Marital Status": "Married"
+    },
+    {
+        "First Name": "Deepika",
+        "Last Name": "Nair",
+        "Middle Name": null,
+        "Email": "deepika.nair87@gmail.com",
+        "Phone Number": "+91-9844012345",
+        "Date of Birth": "23-01-1987",
+        "Address": "234, Brigade Road, Kochi, Kerala, India",
+        "Marital Status": "Divorced"
+    },
+    {
+        "First Name": "Mohan",
+        "Last Name": "Das",
+        "Middle Name": null,
+        "Email": "mdas1965@gmail.com",
+        "Phone Number": "+91-9815674321",
+        "Date of Birth": "09-07-1965",
+        "Address": "54, VIP Road, Kolkata, West Bengal, India",
+        "Marital Status": "Widowed"
+    },
+    {
+        "First Name": "Anjali",
+        "Last Name": "Mehta",
+        "Middle Name": null,
+        "Email": "anjali.mehta95@gmail.com",
+        "Phone Number": "+91-9000123456",
+        "Date of Birth": "19-11-1995",
+        "Address": "78, Anna Nagar, Chennai, Tamil Nadu, India",
+        "Marital Status": "Single"
+    },
+    {
+        "First Name": "Rajiv",
+        "Last Name": "Bhatia",
+        "Middle Name": null,
+        "Email": "rajivbhatia72@rediffmail.com",
+        "Phone Number": "+91-9912345670",
+        "Date of Birth": "13-08-1972",
+        "Address": "14, Nehru Place, Ahmedabad, Gujarat, India",
+        "Marital Status": "Married"
+    },
+    {
+        "First Name": "Kavita",
+        "Last Name": "Reddy",
+        "Middle Name": null,
+        "Email": "kavita.reddy89@gmail.com",
+        "Phone Number": "+91-9556677889",
+        "Date of Birth": "30-10-1989",
+        "Address": "5th Cross, JP Nagar, Hyderabad, Telangana, India",
+        "Marital Status": "Single"
+    }
+]
