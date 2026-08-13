@@ -846,10 +846,41 @@
 
             <div id="extractionResults" class="results-box">
                 <div class="results-header">
-                    <span>Parsed Profiles JSON</span>
+                    <span>Extraction Output</span>
                     <span id="resultCountBadge" style="font-size:0.75rem; background:#ecfdf5; color:#047857; padding:0.25rem 0.6rem; border-radius:6px; font-weight:600;"></span>
                 </div>
-                <pre><code id="extractedJson"></code></pre>
+                
+                <div class="result-tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.25rem; padding-bottom: 0.5rem;">
+                    <div class="result-tab active" id="resTabRaw" onclick="switchResultTab('raw')" style="font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--accent-blue); border-bottom: 2px solid var(--accent-blue); padding-bottom: 4px; transition: var(--transition);">Raw Extracted Text</div>
+                    <div class="result-tab" id="resTabJson" onclick="switchResultTab('json')" style="font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); padding-bottom: 4px; transition: var(--transition);">Parsed JSON Profiles</div>
+                </div>
+                
+                <!-- Raw Text Panel -->
+                <div id="rawTextPanel" style="display: block;">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <button type="button" class="btn-sm" onclick="copyRawText()" style="font-family:'Outfit',sans-serif; font-size: 0.75rem; padding: 0.35rem 0.85rem; background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px;">
+                            <svg style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy Raw Text
+                        </button>
+                        <button type="button" class="btn-sm" onclick="downloadRawText()" style="font-family:'Outfit',sans-serif; font-size: 0.75rem; padding: 0.35rem 0.85rem; background: #ffffff; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-weight: 600; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px;">
+                            <svg style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Save as TXT File
+                        </button>
+                    </div>
+                    <textarea id="rawTextContent" readonly style="width: 100%; height: 260px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: #ffffff; resize: vertical; outline: none; color: var(--text-secondary); line-height: 1.5;"></textarea>
+                </div>
+                
+                <!-- JSON Panel -->
+                <div id="jsonTextPanel" style="display: none;">
+                    <pre><code id="extractedJson"></code></pre>
+                </div>
             </div>
         </div>
 
@@ -1112,6 +1143,60 @@ Marital Status: Married`;
             }
         }
 
+        /* ==========================================
+           TAB SWITCHING & UTILITIES FOR EXTRACTION RESULTS
+           ========================================== */
+        let activeResultTab = 'raw';
+        let extractedRawTextStr = '';
+
+        function switchResultTab(tabType) {
+            activeResultTab = tabType;
+            const tabRaw = document.getElementById('resTabRaw');
+            const tabJson = document.getElementById('resTabJson');
+            const panelRaw = document.getElementById('rawTextPanel');
+            const panelJson = document.getElementById('jsonTextPanel');
+            
+            // Reset styles
+            tabRaw.style.color = 'var(--text-secondary)';
+            tabRaw.style.borderBottom = '2px solid transparent';
+            tabJson.style.color = 'var(--text-secondary)';
+            tabJson.style.borderBottom = '2px solid transparent';
+            
+            if (tabType === 'raw') {
+                tabRaw.style.color = 'var(--accent-blue)';
+                tabRaw.style.borderBottom = '2px solid var(--accent-blue)';
+                panelRaw.style.display = 'block';
+                panelJson.style.display = 'none';
+            } else {
+                tabJson.style.color = 'var(--accent-blue)';
+                tabJson.style.borderBottom = '2px solid var(--accent-blue)';
+                panelRaw.style.display = 'none';
+                panelJson.style.display = 'block';
+            }
+        }
+
+        function copyRawText() {
+            if (!extractedRawTextStr) return;
+            navigator.clipboard.writeText(extractedRawTextStr).then(() => {
+                alert('Copied raw extracted text to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy text: ' + err);
+            });
+        }
+
+        function downloadRawText() {
+            if (!extractedRawTextStr) return;
+            const blob = new Blob([extractedRawTextStr], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'extracted_ocr_text.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         async function runExtraction(event) {
             event.preventDefault();
             const resultsBox = document.getElementById('extractionResults');
@@ -1141,9 +1226,15 @@ Marital Status: Married`;
                 dropzoneTextEl.innerText = `Selected File: ${file.name}`;
                 
                 if (response.ok) {
-                    document.getElementById('resultCountBadge').innerText = `${data.length} profiles`;
-                    document.getElementById('extractedJson').innerText = JSON.stringify(data, null, 4);
+                    // Populate text content and display panels
+                    extractedRawTextStr = data.raw_text;
+                    document.getElementById('rawTextContent').value = data.raw_text;
+                    
+                    document.getElementById('resultCountBadge').innerText = `${data.parsed_profiles.length} profiles`;
+                    document.getElementById('extractedJson').innerText = JSON.stringify(data.parsed_profiles, null, 4);
+                    
                     resultsBox.style.display = 'block';
+                    switchResultTab('raw'); // Default to raw text display
                 } else {
                     alert('File Extraction Failed:\n\n' + data.error);
                 }

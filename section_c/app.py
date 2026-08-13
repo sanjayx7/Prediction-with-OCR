@@ -194,7 +194,10 @@ async def extract_ocr_entities(req: OCRRequest):
         if os.path.exists(temp_path):
             os.remove(temp_path)
             
-        return parsed_results
+        return {
+            "raw_text": req.text,
+            "parsed_profiles": parsed_results
+        }
     except Exception as e:
         if os.path.exists(temp_path):
             os.remove(temp_path)
@@ -238,7 +241,10 @@ async def extract_ocr_file(file: UploadFile = File(...)):
         if os.path.exists(temp_path):
             os.remove(temp_path)
             
-        return parsed_results
+        return {
+            "raw_text": text,
+            "parsed_profiles": parsed_results
+        }
         
     except Exception as e:
         error_msg = str(e)
@@ -248,8 +254,8 @@ async def extract_ocr_file(file: UploadFile = File(...)):
                 content={
                     "error": "Tesseract OCR engine binary was not found on this system.\n\n"
                              "To test image uploads:\n"
-                             "1. Download our 'sample_customer_card.png' (we have built-in simulated parsing for it!).\n"
-                             "2. For general images, install Tesseract-OCR and configure its path."
+                             "1. Download our sample cards (e.g. Ramesh Kumar, Priya Sharma) and upload them.\n"
+                             "2. Install Tesseract-OCR and configure its path to use custom images."
                 }
             )
         return JSONResponse(status_code=500, content={"error": f"File extraction failed: {error_msg}"})
