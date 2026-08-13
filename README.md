@@ -87,16 +87,21 @@ A chronological train-test split (train on the first 10 months, test on the last
   - 4+ words: `First Name`, `Middle Name` (joined middle words), `Last Name`
 - **Deduplication**: Drops records with matching emails (case-insensitive) or combinations of Name + DOB to prevent duplicates.
 - **Missing Data Handling**: Unmatched values default to `null` in the JSON output.
+- **Image Upload & OCR Engine**: Exposes a new `/extract-image` endpoint integrating `pytesseract` to run local OCR text extraction from document images.
+- **Built-in Demo Simulation**: To allow immediate testing without forcing a local system binary Tesseract installation, the system contains an auto-generated document card (`data/sample_customer_card.png`). If you upload this sample card, the backend automatically performs simulated OCR text parsing, returning the extracted customer profile out-of-the-box!
 
 ---
 
 ## ⚡ Section C – Deployment (FastAPI & Dashboard)
 
-We have built an interactive, dark-themed dashboard styled with glassmorphic cards using Vanilla CSS.
+We have built an interactive, premium minimalist **White UI** dashboard using Vanilla CSS.
 
-- **`/` (Dashboard)**: Real-time graphical comparisons of the regression curves, SVR fits, and model metrics alongside interactive forms to test predictions and raw OCR extractions.
+- **`/` (Dashboard)**: Real-time graphical comparisons of the regression curves, SVR fits, and model metrics, along with interactive tabs for prediction and text/image extraction.
+- **Custom Dropdown Selector**: Replaces browser default selectors with a custom drop-down menu showing the active model choice.
+- **Custom Calendar Date Picker**: Replaces browser default date pickers with an interactive inline calendar permitting smooth monthly toggles (prev/next) and day selections.
 - **`/predict`**: JSON POST endpoint predicting premium percentages and estimating the absolute dollar values for any input date.
-- **`/extract`**: JSON POST endpoint parsing OCR blocks and returning a clean, deduplicated JSON array.
+- **`/extract`**: JSON POST endpoint parsing OCR text blocks and returning a clean, deduplicated JSON array.
+- **`/extract-image`**: Multipart form POST endpoint extracting customer records from uploaded image files.
 
 ---
 
