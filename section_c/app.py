@@ -221,22 +221,7 @@ async def extract_ocr_file(file: UploadFile = File(...)):
         # 3. Image Document (.png, .jpg, .jpeg)
         elif filename.endswith(('.png', '.jpg', '.jpeg')):
             image = Image.open(io.BytesIO(contents))
-            try:
-                text = pytesseract.image_to_string(image)
-            except Exception as ocr_err:
-                # If Tesseract fails and it's our sample PNG, use the pre-rendered text fallback
-                if "sample_customer" in filename:
-                    text = (
-                        "Name: Ramesh Kumar\n"
-                        "DOB: 17-04-1985\n"
-                        "Email: ramesh.kumar85@gmail.com\n"
-                        "Phone: +91-9876543210\n"
-                        "Address: 123, MG Road, Bengaluru, Karnataka, India\n"
-                        "Marital Status: Married\n"
-                        "ID Number: 4789652310"
-                    )
-                else:
-                    raise ocr_err
+            text = pytesseract.image_to_string(image)
         else:
             return JSONResponse(status_code=400, content={"error": "Unsupported file format. Supported: PDF, TXT, PNG, JPG, JPEG"})
             
