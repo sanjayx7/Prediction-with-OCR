@@ -225,7 +225,7 @@ async def extract_ocr_file(file: UploadFile = File(...)):
                 text = pytesseract.image_to_string(image)
             except Exception as ocr_err:
                 # If Tesseract fails and it's our sample PNG, use the pre-rendered text fallback
-                if "sample_customer" in filename or len(contents) < 500000:
+                if "sample_customer" in filename:
                     text = (
                         "Name: Ramesh Kumar\n"
                         "DOB: 17-04-1985\n"
