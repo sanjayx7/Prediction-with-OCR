@@ -1,0 +1,88 @@
+﻿Name: Ramesh Kumar
+DOB: 17-04-1985
+Email: ramesh.kumar85@gmail.com
+Phone: +91-9876543210
+Address: 123, MG Road, Bengaluru, Karnataka, India
+Marital Status: Married
+ID Number: 4789652310
+
+
+Name: Priya Sharma
+DOB: 02-12-1990
+Email: priya.sharma1990@outlook.com
+Phone: +91-9123456780
+Address: 45, Lajpat Nagar, New Delhi, Delhi, India
+Marital Status: Single
+ID Number: 1089723412
+
+
+Name: Arvind Patel
+DOB: 05-09-1978
+Email: arvind.patel78@yahoo.com
+Phone: +91-9812345678
+Address: B-22, Sector 15, Noida, Uttar Pradesh, India
+Marital Status: Married
+ID Number: 7645123980
+
+
+Name: Sneha Joshi
+DOB: 28-06-1992
+Email: sneha.joshi92@gmail.com
+Phone: +91-9898123456
+Address: Flat 9A, Powai Heights, Mumbai, Maharashtra, India
+Marital Status: Single
+ID Number: 8923410987
+
+
+Name: Ajay Verma
+DOB: 11-03-1980
+Email: ajayverma80@gmail.com
+Phone: +91-9977886655
+Address: 67, Ashok Vihar, Ludhiana, Punjab, India
+Marital Status: Married
+ID Number: 5567012398
+
+
+Name: Deepika Nair
+DOB: 23-01-1987
+Email: deepika.nair87@gmail.com
+Phone: +91-9844012345
+Address: 234, Brigade Road, Kochi, Kerala, India
+Marital Status: Divorced
+ID Number: 3345001122
+
+
+Name: Mohan Das
+DOB: 09-07-1965
+Email: mdas1965@gmail.com
+Phone: +91-9815674321
+Address: 54, VIP Road, Kolkata, West Bengal, India
+Marital Status: Widowed
+ID Number: 1199887766
+
+
+Name: Anjali Mehta
+DOB: 19-11-1995
+Email: anjali.mehta95@gmail.com
+Phone: +91-9000123456
+Address: 78, Anna Nagar, Chennai, Tamil Nadu, India
+Marital Status: Single
+ID Number: 7723456789
+
+
+Name: Rajiv Bhatia
+DOB: 13-08-1972
+Email: rajivbhatia72@rediffmail.com
+Phone: +91-9912345670
+Address: 14, Nehru Place, Ahmedabad, Gujarat, India
+Marital Status: Married
+ID Number: 2233445566
+
+
+Name: Kavita Reddy
+DOB: 30-10-1989
+Email: kavita.reddy89@gmail.com
+Phone: +91-9556677889
+Address: 5th Cross, JP Nagar, Hyderabad, Telangana, India
+Marital Status: Single
+ID Number: 6677889900
