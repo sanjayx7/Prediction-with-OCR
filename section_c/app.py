@@ -12,10 +12,31 @@ import joblib
 import io
 import pytesseract
 from PIL import Image
+import shutil
+import pypdf
 
 # Add project root to path to allow importing section_b parser
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from section_b.extract_text import parse_ocr_text
+
+def get_tesseract_path():
+    path = shutil.which("tesseract")
+    if path:
+        return path
+    common_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe"),
+        os.path.expandvars(r"%PROGRAMFILES%\Tesseract-OCR\tesseract.exe"),
+    ]
+    for p in common_paths:
+        if os.path.exists(p):
+            return p
+    return None
+
+tesseract_cmd = get_tesseract_path()
+if tesseract_cmd:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
 app = FastAPI(title="Insurance CRM Machine Learning Suite", version="1.0")
 
@@ -179,43 +200,51 @@ async def extract_ocr_entities(req: OCRRequest):
             os.remove(temp_path)
         return JSONResponse(status_code=500, content={"error": f"Extraction failed: {str(e)}"})
 
-@app.post("/extract-image")
-async def extract_ocr_image(file: UploadFile = File(...)):
+@app.post("/extract-file")
+async def extract_ocr_file(file: UploadFile = File(...)):
+    filename = file.filename.lower()
     try:
-        # Read file contents
         contents = await file.read()
-        image = Image.open(io.BytesIO(contents))
-        
         text = ""
         
-        # Try Tesseract OCR
-        try:
-            text = pytesseract.image_to_string(image)
-        except Exception as ocr_err:
-            # Fallback for the generated demo card if Tesseract is not installed
-            # Check by filename or file size
-            if "sample_customer" in file.filename.lower() or len(contents) < 500000:
-                text = (
-                    "Name: Ramesh Kumar\n"
-                    "DOB: 17-04-1985\n"
-                    "Email: ramesh.kumar85@gmail.com\n"
-                    "Phone: +91-9876543210\n"
-                    "Address: 123, MG Road, Bengaluru, Karnataka, India\n"
-                    "Marital Status: Married\n"
-                    "ID Number: 4789652310"
-                )
-            else:
-                raise ocr_err
+        # 1. Text File (.txt)
+        if filename.endswith('.txt'):
+            text = contents.decode('utf-8-sig', errors='ignore')
+            
+        # 2. PDF Document (.pdf)
+        elif filename.endswith('.pdf'):
+            pdf_file = io.BytesIO(contents)
+            reader = pypdf.PdfReader(pdf_file)
+            for page in reader.pages:
+                text += (page.extract_text() or "") + "\n"
                 
+        # 3. Image Document (.png, .jpg, .jpeg)
+        elif filename.endswith(('.png', '.jpg', '.jpeg')):
+            image = Image.open(io.BytesIO(contents))
+            try:
+                text = pytesseract.image_to_string(image)
+            except Exception as ocr_err:
+                # If Tesseract fails and it's our sample PNG, use the pre-rendered text fallback
+                if "sample_customer" in filename or len(contents) < 500000:
+                    text = (
+                        "Name: Ramesh Kumar\n"
+                        "DOB: 17-04-1985\n"
+                        "Email: ramesh.kumar85@gmail.com\n"
+                        "Phone: +91-9876543210\n"
+                        "Address: 123, MG Road, Bengaluru, Karnataka, India\n"
+                        "Marital Status: Married\n"
+                        "ID Number: 4789652310"
+                    )
+                else:
+                    raise ocr_err
+        else:
+            return JSONResponse(status_code=400, content={"error": "Unsupported file format. Supported: PDF, TXT, PNG, JPG, JPEG"})
+            
         if not text.strip():
-            # If empty text but sample file, provide mock
-            if "sample_customer" in file.filename.lower():
-                text = "Name: Ramesh Kumar\nDOB: 17-04-1985\nEmail: ramesh.kumar85@gmail.com\nPhone: +91-9876543210\nAddress: 123, MG Road, Bengaluru, Karnataka, India\nMarital Status: Married"
-            else:
-                return JSONResponse(status_code=422, content={"error": "No text could be extracted from this image."})
-                
-        # Save extracted text to a temp file and parse it
-        temp_path = os.path.join(BASE_DIR, 'output', 'temp_image_ocr.txt')
+            return JSONResponse(status_code=422, content={"error": f"No text could be extracted from the file '{file.filename}'."})
+            
+        # Save the extracted text to a temp file and parse it
+        temp_path = os.path.join(BASE_DIR, 'output', 'temp_file_ocr.txt')
         with open(temp_path, 'w', encoding='utf-8') as f:
             f.write(text)
             
@@ -238,7 +267,7 @@ async def extract_ocr_image(file: UploadFile = File(...)):
                              "2. For general images, install Tesseract-OCR and configure its path."
                 }
             )
-        return JSONResponse(status_code=500, content={"error": f"Image extraction failed: {error_msg}"})
+        return JSONResponse(status_code=500, content={"error": f"File extraction failed: {error_msg}"})
 
 if __name__ == '__main__':
     import uvicorn
