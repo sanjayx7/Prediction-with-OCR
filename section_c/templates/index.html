@@ -594,6 +594,90 @@
         .plot-img:hover {
             transform: scale(1.01);
         }
+
+        /* OCR Tabs and Upload Zone */
+        .ocr-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        .ocr-tab {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: var(--transition);
+        }
+
+        .ocr-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .ocr-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .dropzone-container {
+            border: 2px dashed var(--input-border);
+            border-radius: 10px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            background: #ffffff;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dropzone-container:hover {
+            border-color: var(--accent-blue);
+            background-color: #f8fafc;
+        }
+
+        .dropzone-icon {
+            width: 32px;
+            height: 32px;
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 1.8;
+            margin-bottom: 0.75rem;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+
+        .dropzone-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .dropzone-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .sample-link-container {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .sample-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .sample-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -731,12 +815,35 @@
         <!-- Section B: OCR Customer Extractor Card -->
         <div class="card">
             <h3 class="card-title">OCR Text Extraction (Section B)</h3>
-            <p class="card-desc">Parse raw semi-structured OCR text formats to build structured profile records.</p>
+            <p class="card-desc">Parse raw semi-structured OCR text or upload document images to build structured profile records.</p>
+            
+            <div class="ocr-tabs">
+                <div class="ocr-tab active" id="tabText" onclick="switchOcrTab('text')">Text Input</div>
+                <div class="ocr-tab" id="tabImage" onclick="switchOcrTab('image')">Image Upload</div>
+            </div>
             
             <form id="extractForm" onsubmit="runExtraction(event)">
-                <div class="form-group">
+                <div class="form-group" id="ocrTextGroup">
                     <label>Semi-Structured OCR Input</label>
                     <textarea id="ocrText" placeholder="Paste OCR document segments here..."></textarea>
+                </div>
+                
+                <div class="form-group" id="ocrImageGroup" style="display: none;">
+                    <label>Document Image Upload</label>
+                    <div class="dropzone-container" onclick="triggerFileSelect()" id="dropzone">
+                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        <div class="dropzone-text" id="dropzoneText">Drag & drop image here, or click to browse</div>
+                        <div class="dropzone-sub">Supports PNG, JPG, JPEG</div>
+                    </div>
+                    <input type="file" id="ocrFile" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+                    
+                    <div class="sample-link-container">
+                        Need a test file? <a href="/data/sample_customer_card.png" download class="sample-link">Download Sample Customer Card (PNG)</a>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn">Extract Profiles & Deduplicate</button>
@@ -996,29 +1103,104 @@ Marital Status: Married`;
             }
         }
 
+        /* ==========================================
+           OCR TAB AND IMAGE FILE SELECTION
+           ========================================== */
+        let activeOcrTab = 'text';
+
+        function switchOcrTab(tabType) {
+            activeOcrTab = tabType;
+            const tabText = document.getElementById('tabText');
+            const tabImage = document.getElementById('tabImage');
+            const textGroup = document.getElementById('ocrTextGroup');
+            const imageGroup = document.getElementById('ocrImageGroup');
+            
+            if (tabType === 'text') {
+                tabText.classList.add('active');
+                tabImage.classList.remove('active');
+                textGroup.style.display = 'block';
+                imageGroup.style.display = 'none';
+            } else {
+                tabText.classList.remove('active');
+                tabImage.classList.add('active');
+                textGroup.style.display = 'none';
+                imageGroup.style.display = 'block';
+            }
+            
+            document.getElementById('extractionResults').style.display = 'none';
+        }
+
+        function triggerFileSelect() {
+            document.getElementById('ocrFile').click();
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('dropzoneText').innerText = `Selected File: ${file.name}`;
+            }
+        }
+
         async function runExtraction(event) {
             event.preventDefault();
-            const textVal = document.getElementById('ocrText').value;
             const resultsBox = document.getElementById('extractionResults');
             resultsBox.style.display = 'none';
 
-            try {
-                const response = await fetch('/extract', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: textVal })
-                });
+            if (activeOcrTab === 'text') {
+                const textVal = document.getElementById('ocrText').value;
+                try {
+                    const response = await fetch('/extract', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: textVal })
+                    });
 
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('resultCountBadge').innerText = `${data.length} profiles`;
-                    document.getElementById('extractedJson').innerText = JSON.stringify(data, null, 4);
-                    resultsBox.style.display = 'block';
-                } else {
-                    alert('Error: ' + data.error);
+                    const data = await response.json();
+                    if (response.ok) {
+                        document.getElementById('resultCountBadge').innerText = `${data.length} profiles`;
+                        document.getElementById('extractedJson').innerText = JSON.stringify(data, null, 4);
+                        resultsBox.style.display = 'block';
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (err) {
+                    alert('Extraction fetch failed: ' + err);
                 }
-            } catch (err) {
-                alert('Extraction fetch failed: ' + err);
+            } else {
+                // Image upload mode
+                const fileInput = document.getElementById('ocrFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select an image file to extract.');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const dropzoneTextEl = document.getElementById('dropzoneText');
+                dropzoneTextEl.innerText = "Extracting OCR text from image... please wait";
+                
+                try {
+                    const response = await fetch('/extract-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    dropzoneTextEl.innerText = `Selected File: ${file.name}`;
+                    
+                    if (response.ok) {
+                        document.getElementById('resultCountBadge').innerText = `${data.length} profiles`;
+                        document.getElementById('extractedJson').innerText = JSON.stringify(data, null, 4);
+                        resultsBox.style.display = 'block';
+                    } else {
+                        alert('OCR Extraction Failed:\n\n' + data.error);
+                    }
+                } catch (err) {
+                    dropzoneTextEl.innerText = `Selected File: ${file.name}`;
+                    alert('Extraction fetch failed: ' + err);
+                }
             }
         }
     </script>
