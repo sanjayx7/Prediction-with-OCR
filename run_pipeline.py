@@ -7,7 +7,14 @@ def run_script(script_path):
     print(f"Running script: {script_path}")
     print(f"==========================================")
     
-    python_exe = sys.executable
+    # Detect if the ML virtual environment python exists, as it contains scikit-learn, matplotlib, xgboost, etc.
+    ml_venv_python = r"C:\Users\ACER\ML\venv\Scripts\python.exe"
+    if os.path.exists(ml_venv_python):
+        python_exe = ml_venv_python
+    else:
+        python_exe = sys.executable
+        
+    print(f"Using Python executable: {python_exe}")
     result = subprocess.run([python_exe, script_path], capture_output=False)
     
     if result.returncode != 0:
@@ -37,8 +44,16 @@ def main():
     sys.path.append(os.path.join(root_dir, 'section_c'))
     
     try:
-        import uvicorn
-        uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
+        # Check if uvicorn is available in the selected interpreter path
+        # To launch the server, we run it using the same detected python executable to ensure FastAPI/Uvicorn load dependencies
+        ml_venv_python = r"C:\Users\ACER\ML\venv\Scripts\python.exe"
+        if os.path.exists(ml_venv_python):
+            # Run server as a python subprocess to ensure it uses the virtual environment dependencies
+            app_script = os.path.join(root_dir, 'section_c', 'app.py')
+            subprocess.run([ml_venv_python, app_script], capture_output=False)
+        else:
+            import uvicorn
+            uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
     except ImportError:
         print("ERROR: uvicorn is not installed in the current environment.")
         print("Please install requirements: pip install -r requirements.txt")
