@@ -2,21 +2,25 @@ import os
 import sys
 import subprocess
 
-def run_script(script_path):
+def get_python_exe(root_dir):
+    local_venv = os.path.join(root_dir, "venv", "Scripts", "python.exe")
+    if os.path.exists(local_venv):
+        return local_venv
+    ext_venv = r"C:\Users\ACER\ML\venv\Scripts\python.exe"
+    if os.path.exists(ext_venv):
+        return ext_venv
+    return sys.executable
+
+def run_script(script_path, root_dir):
     print(f"\n==========================================")
     print(f"Running script: {script_path}")
     print(f"==========================================")
-    
-    # Detect if the ML virtual environment python exists, as it contains scikit-learn, matplotlib, xgboost, etc.
-    ml_venv_python = r"C:\Users\ACER\ML\venv\Scripts\python.exe"
-    if os.path.exists(ml_venv_python):
-        python_exe = ml_venv_python
-    else:
-        python_exe = sys.executable
-        
+
+    python_exe = get_python_exe(root_dir)
     print(f"Using Python executable: {python_exe}")
-    result = subprocess.run([python_exe, script_path], capture_output=False)
     
+    result = subprocess.run([python_exe, script_path], capture_output=False)
+
     if result.returncode != 0:
         print(f"ERROR: Script {script_path} failed with exit code {result.returncode}")
         sys.exit(result.returncode)
@@ -25,38 +29,29 @@ def run_script(script_path):
 
 def main():
     root_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # 1. Run Section A: Premium Prediction Pipeline
+
+    # 1. Run Section A: Premium Prediction Pipeline (Model Training & Metric Outputs)
     section_a_script = os.path.join(root_dir, 'section_a', 'train_predict.py')
-    run_script(section_a_script)
-    
-    # 2. Run Section B: OCR Text Extraction Pipeline
-    section_b_script = os.path.join(root_dir, 'section_b', 'extract_text.py')
-    run_script(section_b_script)
-    
-    # 3. Launch FastAPI App (Section C)
+    run_script(section_a_script, root_dir)
+
+    # 2. Launch FastAPI App (Section C)
     print(f"\n==========================================")
     print(f"Starting FastAPI Web Server (Section C)...")
     print(f"Access the Dashboard at: http://127.0.0.1:8000")
     print(f"==========================================")
-    
-    # Add section_c to python path so uvicorn can find the app module
-    sys.path.append(os.path.join(root_dir, 'section_c'))
-    
+
+    python_exe = get_python_exe(root_dir)
+    print(f"Using Python executable: {python_exe}")
+    section_c_dir = os.path.join(root_dir, 'section_c')
+
     try:
-        # Check if uvicorn is available in the selected interpreter path
-        # To launch the server, we run it using the same detected python executable to ensure FastAPI/Uvicorn load dependencies
-        ml_venv_python = r"C:\Users\ACER\ML\venv\Scripts\python.exe"
-        if os.path.exists(ml_venv_python):
-            # Run server as a python subprocess to ensure it uses the virtual environment dependencies
-            app_script = os.path.join(root_dir, 'section_c', 'app.py')
-            subprocess.run([ml_venv_python, app_script], capture_output=False)
-        else:
-            import uvicorn
-            uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
-    except ImportError:
-        print("ERROR: uvicorn is not installed in the current environment.")
-        print("Please install requirements: pip install -r requirements.txt")
+        # --reload ensures uvicorn always re-reads the latest code on each request
+        subprocess.run(
+            [python_exe, "-m", "uvicorn", "app:app",
+             "--host", "127.0.0.1", "--port", "8000", "--reload"],
+            cwd=section_c_dir,
+            capture_output=False,
+        )
     except KeyboardInterrupt:
         print("\nWeb server stopped by user.")
 

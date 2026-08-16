@@ -815,35 +815,64 @@
         <!-- Section B: OCR Customer Extractor Card -->
         <div class="card">
             <h3 class="card-title">Document Extractor (Section B)</h3>
-            <p class="card-desc">Upload document files (TXT, PDF, PNG, JPG, JPEG) to extract structured, deduplicated customer profiles.</p>
+            <p class="card-desc">Choose between pasting raw OCR text directly (fast path) or uploading scanned image/PDF documents.</p>
             
-            <form id="extractForm" onsubmit="runExtraction(event)">
-                <div class="form-group">
-                    <label>Document File Upload</label>
-                    <div class="dropzone-container" onclick="triggerFileSelect()" id="dropzone">
-                        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            <polyline points="14 2 14 8 20 8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="16" y1="13" x2="8" y2="13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="16" y1="17" x2="8" y2="17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            <polyline points="10 9 9 9 8 9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <div class="dropzone-text" id="dropzoneText">Drag & drop document here, or click to browse</div>
-                        <div class="dropzone-sub">Supports PDF, TXT, PNG, JPG, JPEG</div>
-                    </div>
-                    <input type="file" id="ocrFile" style="display: none;" accept=".pdf,.txt,image/*" onchange="handleFileSelect(event)">
-                    
-                    <div class="sample-link-container">
-                        Need test files? 
-                        <a href="/data/sample_customer_card.png" download class="sample-link">Sample Card (PNG)</a>
-                        <span style="margin: 0 4px; color: var(--text-muted);">|</span>
-                        <a href="/data/ocr_data.txt" download class="sample-link">OCR Text Document (TXT)</a>
-                    </div>
+            <!-- Dual Path Mode Selector Tabs -->
+            <div class="ocr-tabs">
+                <div class="ocr-tab active" id="tabModeText" onclick="switchPathTab('text')">
+                    📝 Paste OCR Text (Fast Path)
                 </div>
-                
-                <button type="submit" class="btn">Extract Profiles & Deduplicate</button>
-            </form>
+                <div class="ocr-tab" id="tabModeImage" onclick="switchPathTab('image')">
+                    🖼️ Upload Image / Scan (OCR Path)
+                </div>
+            </div>
 
+            <!-- PATH 1: Paste OCR Text (Fast Path, No OCR) -->
+            <div id="pathTextContainer" style="display: block;">
+                <form id="textForm" onsubmit="parseTextDirect(event)">
+                    <div class="form-group">
+                        <label>Paste Raw OCR Text</label>
+                        <textarea id="pasteTextArea" placeholder="Paste customer information blocks here... (e.g. Name: Rahul Kumar Sharma&#10;Email: rahul.sharma@example.com&#10;Phone: +91 98765 43210 ...)" style="width: 100%; height: 160px; padding: 0.75rem; font-family: monospace; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: #ffffff; resize: vertical; outline: none; color: var(--text-primary); line-height: 1.5;"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 0.75rem;">
+                        <label>Or Select Plain Text File (.txt)</label>
+                        <input type="file" id="txtFile" accept=".txt" onchange="handleTxtFileSelect(event)" style="font-size: 0.85rem; color: var(--text-secondary);">
+                    </div>
+                    
+                    <div class="sample-link-container" style="text-align: left; margin-bottom: 1.25rem;">
+                        Need sample text? 
+                        <a href="/data/ocr_data.txt" download class="sample-link">Download ocr_data.txt</a>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="btnParseText">Parse Text Profiles (Instant)</button>
+                </form>
+            </div>
+
+            <!-- PATH 2: Upload Image / Scan (OCR Path, Lazy Loaded) -->
+            <div id="pathImageContainer" style="display: none;">
+                <form id="imageForm" onsubmit="runImageOCR(event)">
+                    <div class="form-group">
+                        <label>Upload Document / Image File (PNG, JPG, JPEG, PDF)</label>
+                        <div class="dropzone-container" onclick="triggerImageFileSelect()" id="dropzone">
+                            <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <polyline points="14 2 14 8 20 8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="13" x2="8" y2="13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="17" x2="8" y2="17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <polyline points="10 9 9 9 8 9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="dropzone-text" id="dropzoneText">Drag & drop image/PDF file here, or click to browse</div>
+                            <div class="dropzone-sub">Supports PNG, JPG, JPEG, PDF</div>
+                        </div>
+                        <input type="file" id="ocrImageFile" style="display: none;" accept=".pdf,.png,.jpg,.jpeg" onchange="handleImageFileSelect(event)">
+                    </div>
+                    
+                    <button type="submit" class="btn" id="btnRunOCR">Run OCR & Parse Profiles</button>
+                </form>
+            </div>
+
+            <!-- SHARED RESULTS DISPLAY -->
             <div id="extractionResults" class="results-box">
                 <div class="results-header">
                     <span>Extraction Output</span>
@@ -904,28 +933,6 @@
     </div>
 
     <script>
-        // Preset sample text on load
-        document.getElementById('ocrText').value = `Name: Ramesh Kumar
-DOB: 17-04-1985
-Email: ramesh.kumar85@gmail.com
-Phone: +91-9876543210
-Address: 123, MG Road, Bengaluru, Karnataka, India
-Marital Status: Married
-
-Name: Priya Sharma
-DOB: 02-12-1990
-Email: priya.sharma1990@outlook.com
-Phone: +91-9123456780
-Address: 45, Lajpat Nagar, New Delhi, Delhi, India
-Marital Status: Single
-
-Name: Ramesh Kumar
-DOB: 17-04-1985
-Email: ramesh.kumar85@gmail.com
-Phone: +91-9876543210
-Address: 123, MG Road, Bengaluru, Karnataka, India
-Marital Status: Married`;
-
         /* ==========================================
            CUSTOM DROPDOWN LOGIC
            ========================================== */
@@ -1130,13 +1137,43 @@ Marital Status: Married`;
         }
 
         /* ==========================================
-           OCR FILE SELECTION AND EXTRACTION
+           DUAL PATH SELECTION & SWITCHING
            ========================================== */
-        function triggerFileSelect() {
-            document.getElementById('ocrFile').click();
+        function switchPathTab(mode) {
+            const tabText = document.getElementById('tabModeText');
+            const tabImage = document.getElementById('tabModeImage');
+            const containerText = document.getElementById('pathTextContainer');
+            const containerImage = document.getElementById('pathImageContainer');
+
+            if (mode === 'text') {
+                tabText.classList.add('active');
+                tabImage.classList.remove('active');
+                containerText.style.display = 'block';
+                containerImage.style.display = 'none';
+            } else {
+                tabImage.classList.add('active');
+                tabText.classList.remove('active');
+                containerImage.style.display = 'block';
+                containerText.style.display = 'none';
+            }
         }
 
-        function handleFileSelect(e) {
+        function handleTxtFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('pasteTextArea').value = evt.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function triggerImageFileSelect() {
+            document.getElementById('ocrImageFile').click();
+        }
+
+        function handleImageFileSelect(e) {
             const file = e.target.files[0];
             if (file) {
                 document.getElementById('dropzoneText').innerText = `Selected File: ${file.name}`;
@@ -1156,7 +1193,6 @@ Marital Status: Married`;
             const panelRaw = document.getElementById('rawTextPanel');
             const panelJson = document.getElementById('jsonTextPanel');
             
-            // Reset styles
             tabRaw.style.color = 'var(--text-secondary)';
             tabRaw.style.borderBottom = '2px solid transparent';
             tabJson.style.color = 'var(--text-secondary)';
@@ -1197,51 +1233,99 @@ Marital Status: Married`;
             URL.revokeObjectURL(url);
         }
 
-        async function runExtraction(event) {
+        /* PATH 1 - Fast Text Parse (Instant, No OCR engine overhead) */
+        async function parseTextDirect(event) {
             event.preventDefault();
+            const textVal = document.getElementById('pasteTextArea').value.trim();
+            if (!textVal) {
+                alert('Please paste OCR text or select a valid .txt file before parsing.');
+                return;
+            }
+
+            const btn = document.getElementById('btnParseText');
             const resultsBox = document.getElementById('extractionResults');
             resultsBox.style.display = 'none';
 
-            // File upload mode (PDF, TXT, Image)
-            const fileInput = document.getElementById('ocrFile');
+            btn.innerText = "Parsing text... (Instant)";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/extract-text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textVal })
+                });
+
+                const data = await response.json();
+                btn.innerText = "Parse Text Profiles (Instant)";
+                btn.disabled = false;
+
+                if (response.ok) {
+                    displayExtractionResults(data);
+                } else {
+                    alert('Text Extraction Failed:\n\n' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                btn.innerText = "Parse Text Profiles (Instant)";
+                btn.disabled = false;
+                alert('Text parsing request failed: ' + err);
+            }
+        }
+
+        /* PATH 2 - Image/Scan OCR Parse (Lazy Loaded OCR Engine) */
+        async function runImageOCR(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('ocrImageFile');
             const file = fileInput.files[0];
             if (!file) {
-                alert('Please select a file to extract.');
+                alert('Please select an image or scanned PDF document file.');
                 return;
             }
-            
+
+            const btn = document.getElementById('btnRunOCR');
+            const resultsBox = document.getElementById('extractionResults');
+            resultsBox.style.display = 'none';
+
+            btn.innerText = "Running OCR engine, please wait a few seconds...";
+            btn.disabled = true;
+
             const formData = new FormData();
             formData.append('file', file);
-            
-            const dropzoneTextEl = document.getElementById('dropzoneText');
-            dropzoneTextEl.innerText = "Extracting text from document file... please wait";
-            
+
             try {
-                const response = await fetch('/extract-file', {
+                const response = await fetch('/extract-image', {
                     method: 'POST',
                     body: formData
                 });
 
                 const data = await response.json();
-                dropzoneTextEl.innerText = `Selected File: ${file.name}`;
-                
+                btn.innerText = "Run OCR & Parse Profiles";
+                btn.disabled = false;
+
                 if (response.ok) {
-                    // Populate text content and display panels
-                    extractedRawTextStr = data.raw_text;
-                    document.getElementById('rawTextContent').value = data.raw_text;
-                    
-                    document.getElementById('resultCountBadge').innerText = `${data.parsed_profiles.length} profiles`;
-                    document.getElementById('extractedJson').innerText = JSON.stringify(data.parsed_profiles, null, 4);
-                    
-                    resultsBox.style.display = 'block';
-                    switchResultTab('raw'); // Default to raw text display
+                    displayExtractionResults(data);
                 } else {
-                    alert('File Extraction Failed:\n\n' + data.error);
+                    alert('Image OCR Extraction Failed:\n\n' + (data.error || 'Unknown error'));
                 }
             } catch (err) {
-                dropzoneTextEl.innerText = `Selected File: ${file.name}`;
-                alert('Extraction fetch failed: ' + err);
+                btn.innerText = "Run OCR & Parse Profiles";
+                btn.disabled = false;
+                alert('OCR request failed: ' + err);
             }
+        }
+
+        function displayExtractionResults(data) {
+            const resultsBox = document.getElementById('extractionResults');
+            const rawText = data.raw_text || "";
+            const profiles = data.parsed_profiles || [];
+
+            extractedRawTextStr = rawText;
+            document.getElementById('rawTextContent').value = rawText;
+            document.getElementById('resultCountBadge').innerText = `${profiles.length} profiles (${data.total_records || profiles.length} total candidate records)`;
+            document.getElementById('extractedJson').innerText = JSON.stringify(profiles, null, 4);
+
+            resultsBox.style.display = 'block';
+            switchResultTab('raw');
         }
     </script>
 </body>

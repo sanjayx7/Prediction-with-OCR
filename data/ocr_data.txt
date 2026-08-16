@@ -1,88 +1,196 @@
-﻿Name: Ramesh Kumar
+--- RECORD 1 ---
+CUSTOMER INFORMATION
+Name: Rahul Kumar Sharma
+Email: rahul.sharma@example.com
+Phone: +91 98765 43210
+DOB: 14/02/1992
+Address: 12 MG Road, Kochi, Kerala 682016
+Marital Status: Married
+
+
+--- RECORD 2 ---
+Customer: Anjali Menon
+First Name: Anjali
+Middle Name: Priya
+Last Name: Menon
+Email: anjali.menon@example.com
+Mobile: 98470 12345
+Date of Birth: 22-07-1995
+Address: 45 Palace Road, Thrissur, Kerala 680001
+Status: Single
+
+
+--- RECORD 3 ---
+NAME - Arjun Thomas
+E-MAIL arjun.thomas@example.com
+CONTACT: +91-81234-56789
+Birth Date: 03 March 1988
+Residence: 18 Lake View Lane, Bengaluru, Karnataka 560001
+Marital: Married
+
+
+--- RECORD 4 ---
+Customer Name - Aditya Raj
+E-mail: aditya.raj@example.com
+Contact Number: 97456 12345
+Birth Date: 11/11/1991
+Residence: 88 Park Street, Kolkata, West Bengal 700016
+Marital: Single
+
+
+--- RECORD 5 ---
+Full Name: Vivek Anand Pillai
+Email Address: vivek.pillai@example.com
+Telephone: +91 94471 99887
+DOB: 05-01-1984
+Address: 302 Marine Drive, Mumbai, Maharashtra 400020
+Status: Married
+
+
+--- RECORD 6 ---
+Customer: Priya S Nair
+Email Address: priya.nair@example.com
+Telephone: 98950 77889
+DOB: 28 December 1996
+Address: 7 River View, Alappuzha, Kerala 688001
+Marital Status: Single
+
+
+--- RECORD 7 ---
+Customer: Ramesh Kumar
 DOB: 17-04-1985
 Email: ramesh.kumar85@gmail.com
-Phone: +91-9876543210
+Phone: +91-9876543201
 Address: 123, MG Road, Bengaluru, Karnataka, India
 Marital Status: Married
-ID Number: 4789652310
 
 
+--- RECORD 8 ---
 Name: Priya Sharma
 DOB: 02-12-1990
 Email: priya.sharma1990@outlook.com
 Phone: +91-9123456780
 Address: 45, Lajpat Nagar, New Delhi, Delhi, India
 Marital Status: Single
-ID Number: 1089723412
 
 
-Name: Arvind Patel
+--- RECORD 9 ---
+Customer Name: Arvind Patel
 DOB: 05-09-1978
 Email: arvind.patel78@yahoo.com
 Phone: +91-9812345678
 Address: B-22, Sector 15, Noida, Uttar Pradesh, India
 Marital Status: Married
-ID Number: 7645123980
 
 
-Name: Sneha Joshi
+--- RECORD 10 ---
+NAME - Sneha Joshi
 DOB: 28-06-1992
 Email: sneha.joshi92@gmail.com
 Phone: +91-9898123456
 Address: Flat 9A, Powai Heights, Mumbai, Maharashtra, India
+Status: Single
+
+
+--- RECORD 11 ---
+First Name: Kiran
+Middle Name: Raj
+Last Name: Das
+Email: kiran.das@example.com
+Phone: 90370 99881
+DOB: 07/04/1994
+Address: 14 Station Road, Kannur, Kerala 670001
 Marital Status: Single
-ID Number: 8923410987
 
 
-Name: Ajay Verma
-DOB: 11-03-1980
-Email: ajayverma80@gmail.com
-Phone: +91-9977886655
-Address: 67, Ashok Vihar, Ludhiana, Punjab, India
-Marital Status: Married
-ID Number: 5567012398
-
-
-Name: Deepika Nair
-DOB: 23-01-1987
-Email: deepika.nair87@gmail.com
-Phone: +91-9844012345
+--- RECORD 12 ---
+Customer: Deepika Nair
+Date of Birth: 23-01-1987
+E-mail: deepika.nair87@gmail.com
+Phone No: +91-9844012345
 Address: 234, Brigade Road, Kochi, Kerala, India
-Marital Status: Divorced
-ID Number: 3345001122
+Marital: Divorced
 
 
+--- RECORD 13 ---
 Name: Mohan Das
-DOB: 09-07-1965
-Email: mdas1965@gmail.com
-Phone: +91-9815674321
-Address: 54, VIP Road, Kolkata, West Bengal, India
+Birth Date: 09-07-1965
+Email Address: mdas1965@gmail.com
+Contact: +91-9815674321
+Residence: 54, VIP Road, Kolkata, West Bengal, India
 Marital Status: Widowed
-ID Number: 1199887766
 
 
-Name: Anjali Mehta
+--- RECORD 14 ---
+Customer Name - Anjali Mehta
 DOB: 19-11-1995
 Email: anjali.mehta95@gmail.com
 Phone: +91-9000123456
 Address: 78, Anna Nagar, Chennai, Tamil Nadu, India
-Marital Status: Single
-ID Number: 7723456789
+Status: Single
 
 
-Name: Rajiv Bhatia
+--- RECORD 15 ---
+NAME - Rajiv Bhatia
 DOB: 13-08-1972
 Email: rajivbhatia72@rediffmail.com
-Phone: +91-9912345670
+Telephone: +91-9912345670
 Address: 14, Nehru Place, Ahmedabad, Gujarat, India
 Marital Status: Married
-ID Number: 2233445566
 
 
+--- RECORD 16 ---
 Name: Kavita Reddy
 DOB: 30-10-1989
 Email: kavita.reddy89@gmail.com
-Phone: +91-9556677889
+Phone Number: +91-9556677889
 Address: 5th Cross, JP Nagar, Hyderabad, Telangana, India
 Marital Status: Single
-ID Number: 6677889900
+
+
+--- RECORD 17 ---
+First Name: Vikram
+Last Name: Seth
+Email: vikram.seth@example.com
+Mobile: 98111 22334
+Date of Birth: 20-05-1982
+Address: 10 Model Town, Delhi 110009
+Marital Status: Married
+
+
+--- RECORD 18 ---
+Customer Name: Sunita Rao
+Email: sunita.rao@example.com
+Contact Number: +91 97222 33445
+DOB: 12/04/1989
+Residence: 56 MG Road, Mysuru, Karnataka 570001
+Status: Single
+
+
+--- RECORD 19 ---
+Full Name: Suresh Chandra Paul
+E-mail: suresh.paul@example.com
+Phone No: 94333 44556
+Birth: 01-01-1975
+Address: 12 Salt Lake, Kolkata, West Bengal 700091
+Marital Status: Married
+
+
+--- RECORD 20 ---
+Name: Riya Kapoor
+Middle Name: Ananya
+Last Name: Kapoor
+Email Address: riya.kapoor@example.com
+Mobile No: +91-98666-77889
+Date of Birth: 15-09-1996
+Address: 78 FC Road, Pune, Maharashtra 411004
+Marital Status: Single
+
+
+--- RECORD 21 (DUPLICATE TEST) ---
+Customer Name: Rahul Kumar Sharma
+Email: rahul.sharma@example.com
+Phone: +91 98765 43210
+DOB: 14/02/1992
+Address: 12 MG Road, Kochi, Kerala 682016
+Marital Status: Married
