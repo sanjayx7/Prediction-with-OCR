@@ -52,12 +52,26 @@ def preprocess_and_engineer(data_path):
     df['Months_Elapsed'] = ((df['Date'].dt.year - start_date.year) * 12 + 
                             (df['Date'].dt.month - start_date.month))
     
-    # Targets: We compute both percentage representations
-    total_premium = df['Premium'].sum()
-    max_premium = df['Premium'].max()
+    # Split chronologically to train set (first 10 rows) for calculating targets
+    train_df = df.iloc[:10]
     
-    df['Premium_Pct_Total'] = (df['Premium'] / total_premium) * 100
-    df['Premium_Pct_Max'] = (df['Premium'] / max_premium) * 100
+    # OUTLIER DETECTION: Scan training set for premium outliers
+    median_premium = train_df['Premium'].median()
+    for idx, row in train_df.iterrows():
+        ratio = row['Premium'] / median_premium
+        if ratio > 5.0:
+            print(f"\n[WARNING] Outlier detected in training data:")
+            print(f"  Date: {row['Date'].strftime('%Y-%m-%d')}")
+            print(f"  Premium: {row['Premium']:,.2f} ({ratio:.2f}x the training median of {median_premium:,.2f})")
+            print(f"  Note: This outlier is kept in the dataset to prevent discarding valid extreme entries,")
+            print(f"        but it may distort predictions for algorithms sensitive to scale (SVR, RF).")
+            
+    # Targets: We compute both percentage representations relative to the training set to prevent data leakage
+    total_premium_train = train_df['Premium'].sum()
+    max_premium_train = train_df['Premium'].max()
+    
+    df['Premium_Pct_Total'] = (df['Premium'] / total_premium_train) * 100
+    df['Premium_Pct_Max'] = (df['Premium'] / max_premium_train) * 100
     
     return df
 
@@ -83,6 +97,14 @@ def train_and_evaluate(df, target_col, output_dir):
     
     # Define models
     # hyperparameters are kept simple to prevent overfitting on 13 samples
+    #
+    # EXTRAPOLATION LIMITATION:
+    # Tree-based regressors (RandomForest and XGBoost) partition the feature space based on historical thresholds
+    # seen in training (e.g. max Year_Fraction or Months_Elapsed). Consequently, they cannot extrapolate trends
+    # (such as linear growth) outside the bounds of the training features. In time series prediction, this often
+    # results in flat predictions for future/test periods, yielding poor or negative test R² if a trend is present.
+    # Linear-based or kernel-based regressors (like SVR with certain kernels) may handle extrapolation differently
+    # depending on feature density.
     models = {
         'SVR': SVR(C=10.0, epsilon=0.1, kernel='rbf'),
         'RandomForest': RandomForestRegressor(n_estimators=50, max_depth=3, random_state=42),
@@ -131,6 +153,56 @@ def train_and_evaluate(df, target_col, output_dir):
         predictions[name] = preds_all
         
     return results, predictions
+
+def walk_forward_cv(df, target_col, min_train_size=6):
+    """
+    Performs walk-forward (expanding window) cross-validation across all rows.
+    Starts with min_train_size (default 6), trains on t rows, and validates on row t+1.
+    Helps evaluate models robustly on small, noisy datasets.
+    """
+    features = ['Year_Fraction', 'Month_Sin', 'Month_Cos', 'Months_Elapsed']
+    N = len(df)
+    
+    print(f"\n--- Walk-Forward CV (Expanding Window) for Target: {target_col} ---")
+    
+    models_def = {
+        'SVR': lambda: SVR(C=10.0, epsilon=0.1, kernel='rbf'),
+        'RandomForest': lambda: RandomForestRegressor(n_estimators=50, max_depth=3, random_state=42),
+        'XGBoost': lambda: XGBRegressor(n_estimators=30, max_depth=2, learning_rate=0.1, random_state=42)
+    }
+    
+    cv_predictions = {name: [] for name in models_def}
+    actuals = df.iloc[min_train_size:][target_col].values
+    
+    for t in range(min_train_size, N):
+        train_df = df.iloc[:t]
+        test_row = df.iloc[t:t+1]
+        
+        X_tr = train_df[features].values
+        y_tr = train_df[target_col].values
+        X_te = test_row[features].values
+        
+        # Fit scaler for SVR
+        scaler = StandardScaler()
+        X_tr_scaled = scaler.fit_transform(X_tr)
+        X_te_scaled = scaler.transform(X_te)
+        
+        for name, model_fn in models_def.items():
+            model = model_fn()
+            if name == 'SVR':
+                model.fit(X_tr_scaled, y_tr)
+                pred = model.predict(X_te_scaled)[0]
+            else:
+                model.fit(X_tr, y_tr)
+                pred = model.predict(X_te)[0]
+            cv_predictions[name].append(pred)
+            
+    for name in models_def:
+        preds = np.array(cv_predictions[name])
+        mae = mean_absolute_error(actuals, preds)
+        r2 = r2_score(actuals, preds)
+        print(f"{name} (WF-CV):")
+        print(f"  Overall MAE: {mae:.4f}, R²: {r2:.4f}")
 
 def generate_plots(df, predictions_total, predictions_max, output_dir):
     # Plot 1: Percentage of Total Premium
@@ -204,9 +276,11 @@ def main():
     
     # Train and evaluate models on Target 1: Percentage of Total Premium
     results_total, predictions_total = train_and_evaluate(df, 'Premium_Pct_Total', output_dir)
+    walk_forward_cv(df, 'Premium_Pct_Total')
     
     # Train and evaluate models on Target 2: Percentage of Max Premium
     results_max, predictions_max = train_and_evaluate(df, 'Premium_Pct_Max', output_dir)
+    walk_forward_cv(df, 'Premium_Pct_Max')
     
     # Generate visualization plots
     generate_plots(df, predictions_total, predictions_max, output_dir)
@@ -227,10 +301,12 @@ def main():
         if res['scaler'] is not None:
             joblib.dump(res['scaler'], os.path.join(models_dir, f'{name.lower()}_scaler_max.joblib'))
             
-    # Save a summary JSON with metrics
+    # Save a summary JSON with metrics. 
+    # Important: We must use training set sum and max to ensure scaling matches the targets of the models
+    train_df = df.iloc[:10]
     metrics = {
-        'total_premium': float(df['Premium'].sum()),
-        'max_premium': float(df['Premium'].max()),
+        'total_premium': float(train_df['Premium'].sum()),
+        'max_premium': float(train_df['Premium'].max()),
         'targets': {
             'Premium_Pct_Total': {
                 model_name: {'mae': float(res['mae_test']), 'r2': float(res['r2_test'])}
