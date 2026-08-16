@@ -479,4 +479,17 @@ def parse_ocr_text(file_path):
 
 
 if __name__ == '__main__':
-    pass
+    import json
+    # Run a simple extraction test on the default ocr_data.txt file
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ocr_file_path = os.path.join(base_dir, 'data', 'ocr_data.txt')
+    if os.path.exists(ocr_file_path):
+        print(f"Running standalone extraction on: {ocr_file_path}")
+        results = parse_ocr_data(ocr_file_path)
+        print(f"Total valid candidate records segmented: {results['total_records']}")
+        print(f"Unique profiles identified: {results['unique_profiles']}")
+        print("\nFirst unique profile preview:")
+        if results['parsed_profiles']:
+            print(json.dumps(results['parsed_profiles'][0], indent=2))
+    else:
+        print(f"Default OCR text data file not found at: {ocr_file_path}")

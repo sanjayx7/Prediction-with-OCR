@@ -13,3 +13,5 @@ joblib>=1.2.0
 easyocr>=1.7.0
 pillow>=9.5.0
 pypdf>=3.8.0
+torch>=2.0.0
+
