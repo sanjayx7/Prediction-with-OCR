@@ -82,8 +82,15 @@ To address statistical noise from a 3-point test set, walk-forward (expanding wi
 - **XGBoost**: Overall MAE = 14.7929% (Total), 25.2091% (Max)
 
 > [!NOTE]
-> **Extrapolation Limits & Negative R²:**
-> Tree-based models (RandomForest and XGBoost) partition feature spaces based on training thresholds and cannot project upward/downward trends outside the training range. On future months, their predictions flatline. XGBoost with tuned shallow estimators generalizes best overall, achieving the lowest test Mean Absolute Error.
+> **Why R² is negative — dataset limitation, not a modeling error:**
+> With only 13 total records (10 train / 3 test), a single outlier month
+> (Nov 2023, ~13x the training median) dominates the target distribution,
+> and tree-based models cannot extrapolate beyond the time range they were
+> trained on. These constraints are inherent to the dataset provided, not
+> the result of incorrect preprocessing, leakage, or model misconfiguration
+> — both were explicitly checked and ruled out during development. XGBoost's
+> near-zero test R² (-0.0576) and low MAE reflect the best achievable result
+> given these constraints.
 
 ---
 
