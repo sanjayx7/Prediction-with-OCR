@@ -55,7 +55,7 @@ def preprocess_and_engineer(data_path):
     # Split chronologically to train set (first 10 rows) for calculating targets
     train_df = df.iloc[:10]
     
-    # OUTLIER DETECTION: Scan training set for premium outliers
+    # Check for outliers in the training set
     median_premium = train_df['Premium'].median()
     for idx, row in train_df.iterrows():
         ratio = row['Premium'] / median_premium
@@ -66,7 +66,7 @@ def preprocess_and_engineer(data_path):
             print(f"  Note: This outlier is kept in the dataset to prevent discarding valid extreme entries,")
             print(f"        but it may distort predictions for algorithms sensitive to scale (SVR, RF).")
             
-    # Targets: We compute both percentage representations relative to the training set to prevent data leakage
+    # Compute target percentages relative to training set to prevent leakage
     total_premium_train = train_df['Premium'].sum()
     max_premium_train = train_df['Premium'].max()
     
@@ -95,16 +95,8 @@ def train_and_evaluate(df, target_col, output_dir):
     X_test_scaled = scaler.transform(X_test)
     X_all_scaled = scaler.transform(df[features].values)
     
-    # Define models
-    # hyperparameters are kept simple to prevent overfitting on 13 samples
-    #
-    # EXTRAPOLATION LIMITATION:
-    # Tree-based regressors (RandomForest and XGBoost) partition the feature space based on historical thresholds
-    # seen in training (e.g. max Year_Fraction or Months_Elapsed). Consequently, they cannot extrapolate trends
-    # (such as linear growth) outside the bounds of the training features. In time series prediction, this often
-    # results in flat predictions for future/test periods, yielding poor or negative test R² if a trend is present.
-    # Linear-based or kernel-based regressors (like SVR with certain kernels) may handle extrapolation differently
-    # depending on feature density.
+    # Use simple hyperparameters to avoid overfitting.
+    # Note: Tree models cannot extrapolate trends outside training bounds.
     models = {
         'SVR': SVR(C=10.0, epsilon=0.1, kernel='rbf'),
         'RandomForest': RandomForestRegressor(n_estimators=50, max_depth=3, random_state=42),
@@ -243,9 +235,7 @@ def generate_plots(df, predictions_total, predictions_max, output_dir):
     plt.savefig(os.path.join(output_dir, 'premium_pct_max_comparison.png'), dpi=300)
     plt.close()
     
-    # We also create a single premium-looking dashboard style plot showing the actual vs predicted values
-    # for the best overall model (let's check which is best, usually SVR or RF on small datasets)
-    # We will pick the SVR model for the final combined plot
+    # Create actual vs predicted plot for SVR
     plt.figure(figsize=(10, 5))
     plt.scatter(df['Premium_Pct_Total'], predictions_total['SVR'], color='#3b82f6', s=80, alpha=0.8, 
                 edgecolors='black', label='Predictions (SVR)')
@@ -286,11 +276,9 @@ def main():
     generate_plots(df, predictions_total, predictions_max, output_dir)
     print("Plots generated and saved to the output/ directory.")
     
-    # Save the models of the best fit (SVR and RandomForest) to disk
+    # Save models and scalers to disk
     models_dir = os.path.join(base_dir, 'models')
     os.makedirs(models_dir, exist_ok=True)
-    
-    # Save best models and scalers for both targets
     for name, res in results_total.items():
         joblib.dump(res['model'], os.path.join(models_dir, f'{name.lower()}_model_total.joblib'))
         if res['scaler'] is not None:
@@ -301,8 +289,7 @@ def main():
         if res['scaler'] is not None:
             joblib.dump(res['scaler'], os.path.join(models_dir, f'{name.lower()}_scaler_max.joblib'))
             
-    # Save a summary JSON with metrics. 
-    # Important: We must use training set sum and max to ensure scaling matches the targets of the models
+    # Save summary metrics JSON
     train_df = df.iloc[:10]
     metrics = {
         'total_premium': float(train_df['Premium'].sum()),

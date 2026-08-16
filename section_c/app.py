@@ -169,11 +169,7 @@ class OCRTextRequest(BaseModel):
 @app.post("/extract")
 async def extract_text_path(req: OCRTextRequest):
     """
-    PATH 1 - "Paste OCR Text" (Fast Path, No OCR):
-    Performance Optimization:
-    Used when text is already known/pasted or uploaded as a plain .txt file.
-    This path NEVER imports, initializes, or calls EasyOCR.
-    It passes the raw text directly to the shared parse_ocr_data() parser.
+    Directly parse pasted raw OCR text without invoking EasyOCR.
     """
     raw_text = req.text.strip()
     if not raw_text:
@@ -198,11 +194,7 @@ async def extract_text_path(req: OCRTextRequest):
 @app.post("/extract-file")
 async def extract_image_path(file: UploadFile = File(...)):
     """
-    PATH 2 - "Upload Image / Scan" (OCR Path, Lazy Loaded):
-    Used ONLY when OCR text extraction is required (PNG, JPG, JPEG, or scanned PDF).
-    1. Runs text/OCR extraction (pypdf for PDFs, lazy EasyOCR for images).
-    2. Passes extracted text output through the IDENTICAL parse_ocr_data() function as Path 1.
-    EasyOCR is loaded into memory ONLY when this path is actually executed.
+    Extract text from uploaded files (scanned PDFs or images) using EasyOCR/pypdf and parse.
     """
     try:
         contents = await file.read()

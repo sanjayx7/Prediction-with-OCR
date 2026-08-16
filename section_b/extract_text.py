@@ -11,14 +11,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-# EasyOCR singleton reader - kept None until lazily requested by Path 2 (Upload Image/Scan)
+# EasyOCR singleton reader
 _easyocr_reader = None
 
 def get_easyocr_reader():
     """
-    Lazy singleton initializer for EasyOCR engine.
-    Imports and loads PyTorch/EasyOCR models into memory ONLY when image/scan OCR is executed.
-    This guarantees Path 1 (Paste OCR Text) never imports or touches EasyOCR at import or runtime.
+    Lazy singleton initializer for the EasyOCR reader.
     """
     global _easyocr_reader
     if _easyocr_reader is None:
@@ -28,8 +26,7 @@ def get_easyocr_reader():
 
 def extract_text_from_file(contents: bytes, filename: str) -> str:
     """
-    Extracts raw text from file contents (TXT, PDF, PNG, JPG, JPEG).
-    Used by Path 2 (Upload Image/Scan) or file uploads.
+    Extract text from TXT, PDF, PNG, JPG, or JPEG file contents.
     """
     filename_lower = filename.lower()
     
@@ -55,7 +52,7 @@ def extract_text_from_file(contents: bytes, filename: str) -> str:
         raise ValueError("Unsupported file format. Supported: PDF, TXT, PNG, JPG, JPEG")
 
 
-# Comprehensive Field Alias Mapping
+# Field alias mapping for OCR keys
 ALIAS_MAP = {
     # Full Name aliases
     "name": "full_name",
@@ -180,14 +177,7 @@ def parse_key_value_line(line: str) -> tuple[str, str] | None:
 
 def segment_records(content: str) -> list[str]:
     """
-    Robust record segmentation logic.
-    Primary Strategy: Use explicit record markers matching r'(?mi)^\s*-{2,}\s*RECORD\s+\d+(?:\s*\([^)]*\))?\s*-{2,}\s*$'.
-    When explicit markers exist, split ONLY on those markers and preserve all lines between them.
-
-    Secondary Strategy: If 'CUSTOMER INFORMATION' headers exist, split on header lines.
-
-    Fallback Strategy: If no explicit markers or headers exist, split on blank-line boundaries (\n\s*\n),
-    which is standard for plain labeled-block OCR files.
+    Segment the input text into individual customer blocks.
     """
     content = content.strip()
     if not content:
@@ -238,8 +228,7 @@ def segment_records(content: str) -> list[str]:
 
 def parse_record_block(block: str) -> dict:
     """
-    Parses key-value pairs from a record block text.
-    Handles multi-line field continuation (EasyOCR frequently wraps field values across multiple lines on skewed/scanned images).
+    Parse key-value pairs from a single customer text block.
     """
     raw_data = {}
     field_fragments = {}  # norm_field -> list of line strings
@@ -319,9 +308,7 @@ def parse_record_block(block: str) -> dict:
 
 def process_name_fields(raw_data: dict) -> tuple[str, str, str]:
     """
-    Extracts (first_name, middle_name, last_name).
-    Prioritizes explicit first/middle/last fields if provided.
-    Merges partial explicit fields (e.g. Middle Name: Ananya in Record 20) with full_name tokens.
+    Extract first name, middle name, and last name from raw fields.
     """
     exp_first = raw_data.get('first_name', '').strip()
     exp_middle = raw_data.get('middle_name', '').strip()
@@ -427,9 +414,8 @@ def records_match(r1: dict, r2: dict) -> bool:
 
 def parse_ocr_data(content_or_filepath: str) -> dict:
     """
-    Main extraction pipeline returning dict with total_records, unique_profiles count, and parsed_profiles.
-    Shared by both Path 1 (Fast Text) and Path 2 (OCR Image/Scan).
-    Filters out empty noise records (titles, footers) from total_records and parsed_profiles.
+    Parse OCR data from a text string or a file path, merge duplicates,
+    and return unique customer profiles.
     """
     if os.path.exists(content_or_filepath) and os.path.isfile(content_or_filepath):
         with open(content_or_filepath, 'r', encoding='utf-8-sig') as f:
