@@ -62,9 +62,7 @@ def preprocess_and_engineer(data_path):
         if ratio > 5.0:
             print(f"\n[WARNING] Outlier detected in training data:")
             print(f"  Date: {row['Date'].strftime('%Y-%m-%d')}")
-            print(f"  Premium: {row['Premium']:,.2f} ({ratio:.2f}x the training median of {median_premium:,.2f})")
-            print(f"  Note: This outlier is kept in the dataset to prevent discarding valid extreme entries,")
-            print(f"        but it may distort predictions for algorithms sensitive to scale (SVR, RF).")
+            print(f"  Premium: {row['Premium']:,.2f} ({ratio:.2f}x median of {median_premium:,.2f})")
             
     # Compute target percentages relative to training set to prevent leakage
     total_premium_train = train_df['Premium'].sum()
